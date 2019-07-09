@@ -1,11 +1,13 @@
 import { User } from '../entities/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Logger, InternalServerErrorException } from '@nestjs/common';
+import { Logger, InternalServerErrorException, ConflictException } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
 import { UserRole } from '../users/user-role.enum';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
+import * as bcrypt from 'bcrypt';
+import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -16,9 +18,9 @@ export class UserRepository extends Repository<User> {
         const { email, password, role } = createUserDto;
 
         user.email = email;
-        user.password = password;
+        user.salt = await bcrypt.genSalt();
+        user.password = await this.hashPassword(password, user.salt);
         user.role = role;
-        user.salt = '';
 
         if (user.role === UserRole.GUEST) {
             user.guestInfo = await this.createGuest(createUserDto.guest);
@@ -27,9 +29,16 @@ export class UserRepository extends Repository<User> {
         try {
             await user.save();
         } catch (error) {
-            this.logger.error('Failed to create user: ' + user.email + '.DTO: ' + JSON.stringify(createUserDto), error.stack);
-            throw new InternalServerErrorException();
+            if (error.code === 'ER_DUP_ENTRY') {
+                throw new ConflictException('Username already exists');
+            } else {
+                this.logger.error('Failed to create user: ' + user.email + '.DTO: ' + JSON.stringify(createUserDto), error.stack);
+                throw new InternalServerErrorException();
+            }
         }
+
+        delete user.password;
+        delete user.salt;
 
         return user;
     }
@@ -69,6 +78,22 @@ export class UserRepository extends Repository<User> {
         } catch (error) {
             this.logger.error('Failed to get users', error.stack);
             throw new InternalServerErrorException();
+        }
+    }
+
+    private async hashPassword(password: string, salt: string): Promise<string> {
+        return bcrypt.hash(password, salt);
+    }
+
+    async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+        const { email , password } = authCredentialsDto;
+
+        const user = await this.findOne({ email });
+
+        if (user && await user.validatePassword(password)) {
+            return user.email;
+        } else {
+            return null;
         }
     }
 }
