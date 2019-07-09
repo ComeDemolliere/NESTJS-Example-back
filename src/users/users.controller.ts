@@ -24,12 +24,13 @@ export class UsersController {
     @Get('/:id')
     getUserById(
         @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: User,
     ): Promise<User> {
-        return this.userService.getUserById(id);
+        return this.userService.getUserById(id, user);
     }
 
     @Post()
-    createTask(
+    createUser(
         @Body(ValidationPipe) createUserDto: CreateUserDto,
         @GetUser() user: User,
     ): Promise<User> {
@@ -41,6 +42,6 @@ export class UsersController {
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: User,
     ): Promise<void> {
-        return this.userService.deleteUser(id);
+        return this.userService.deleteUser(id, user);
     }
 }

@@ -15,8 +15,9 @@ export class UserRepository extends Repository<User> {
     private logger = new Logger('UserRepository');
 
     async createUser(createUserDto: CreateUserDto, userConnected: User): Promise<User> {
-        this.adminVerification(userConnected);
-
+        if (!this.adminVerification(userConnected)) {
+            return;
+        }
         const user = new User();
         const { email, password, role } = createUserDto;
 
@@ -65,7 +66,9 @@ export class UserRepository extends Repository<User> {
     }
 
     async getUsers(filterDto: GetUsersFilterDto, user: User) {
-        this.adminVerification(user);
+        if (!this.adminVerification(user)) {
+            return;
+        }
 
         const role = filterDto.role;
         const query = this.createQueryBuilder('user');
@@ -101,9 +104,10 @@ export class UserRepository extends Repository<User> {
         }
     }
 
-    private adminVerification(user: User) {
+    adminVerification(user: User): boolean {
         if (user.role !== UserRole.ADMIN) {
             throw new UnauthorizedException('role ADMIN is required');
         }
+        return true;
     }
 }
