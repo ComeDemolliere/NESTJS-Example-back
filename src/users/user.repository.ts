@@ -5,6 +5,7 @@ import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
 import { UserRole } from '../users/user-role.enum';
+import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -49,5 +50,25 @@ export class UserRepository extends Repository<User> {
         }
 
         return guest;
+    }
+
+    async getUsers(filterDto: GetUsersFilterDto) {
+        const role = filterDto;
+        const query = this.createQueryBuilder('user');
+
+        /*
+        if (role) {
+            query.where('user.role LIKE :role', {role});
+        } */
+
+        query.leftJoinAndSelect('user.guestInfo', 'guestInfo');
+
+        try {
+            const users = await query.getMany();
+            return users;
+        } catch (error) {
+            this.logger.error('Failed to get users', error.stack);
+            throw new InternalServerErrorException();
+        }
     }
 }
