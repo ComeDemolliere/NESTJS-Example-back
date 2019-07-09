@@ -9,5 +9,5 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     password: 'userpwd',
     database: 'TOMdatabase',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: true,
+    synchronize: false,
 };
