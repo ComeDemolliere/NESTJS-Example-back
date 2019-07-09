@@ -62,13 +62,12 @@ export class UserRepository extends Repository<User> {
     }
 
     async getUsers(filterDto: GetUsersFilterDto) {
-        const role = filterDto;
+        const role = filterDto.role;
         const query = this.createQueryBuilder('user');
 
-        /*
         if (role) {
-            query.where('user.role LIKE :role', {role});
-        } */
+            query.where('user.role = :role', { role });
+        }
 
         query.leftJoinAndSelect('user.guestInfo', 'guestInfo');
 

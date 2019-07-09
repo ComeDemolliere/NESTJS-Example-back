@@ -27,4 +27,11 @@ export class UsersService {
     async createUser(createUserDto: CreateUserDto): Promise<User> {
         return this.userRepository.createUser(createUserDto);
     }
+
+    async deleteUser(id: number): Promise<void> {
+        const result = await this.userRepository.delete({id});
+        if (result.affected === 0) {
+            throw new NotFoundException('User with this ID not found');
+        }
+    }
 }
