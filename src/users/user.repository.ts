@@ -30,7 +30,7 @@ export class UserRepository extends Repository<User> {
             await user.save();
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictException('Username already exists');
+                throw new ConflictException('email already exists');
             } else {
                 this.logger.error('Failed to create user: ' + user.email + '.DTO: ' + JSON.stringify(createUserDto), error.stack);
                 throw new InternalServerErrorException();

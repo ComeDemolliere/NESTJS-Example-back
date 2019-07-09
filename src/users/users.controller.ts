@@ -1,11 +1,13 @@
-import { Controller, Post, Body, Get, Query, ValidationPipe, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, ValidationPipe, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
-import { CreateGuestDto } from './dto/create-guest.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from '../auth/get-user.decorator';
 
 @Controller('users')
+@UseGuards(AuthGuard())
 export class UsersController {
     constructor(
         private userService: UsersService,
@@ -27,8 +29,10 @@ export class UsersController {
 
     @Post()
     createTask(
-        @Body() createUserDto: CreateUserDto,
+        @Body(ValidationPipe) createUserDto: CreateUserDto,
+        @GetUser() user: User,
     ): Promise<User> {
+        console.log(user);
         return this.userService.createUser(createUserDto);
     }
 }
