@@ -4,6 +4,7 @@ import { UserRepository } from '../users/user.repository';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '../users/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
         private jwtService: JwtService,
     ) {}
 
-    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string }> {
+    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string, userId: number, userRole: UserRole }> {
         const email = await this.userRepository.validateUserPassword(authCredentialsDto);
 
         if (!email) {
@@ -27,6 +28,8 @@ export class AuthService {
 
         this.logger.debug('Generated JWT Token with payload: ' + JSON.stringify(payload));
 
-        return { accessToken };
+        const user = await this.userRepository.findOne({ email });
+
+        return { accessToken, userId: user.id, userRole: user.role };
     }
 }
