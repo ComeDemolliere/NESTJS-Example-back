@@ -6,6 +6,7 @@ import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
 import { UserRole } from '../users/user-role.enum';
 import * as bcrypt from 'bcrypt';
+import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -61,5 +62,17 @@ export class UserRepository extends Repository<User> {
 
     private async hashPassword(password: string, salt: string): Promise<string> {
         return bcrypt.hash(password, salt);
+    }
+
+    async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+        const { email , password } = authCredentialsDto;
+
+        const user = await this.findOne({ email });
+
+        if (user && await user.validatePassword(password)) {
+            return user.email;
+        } else {
+            return null;
+        }
     }
 }
