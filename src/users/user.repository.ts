@@ -92,13 +92,13 @@ export class UserRepository extends Repository<User> {
         return bcrypt.hash(password, salt);
     }
 
-    async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+    async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<User> {
         const { email , password } = authCredentialsDto;
 
         const user = await this.findOne({ email });
 
         if (user && await user.validatePassword(password)) {
-            return user.email;
+            return user;
         } else {
             return null;
         }

@@ -17,18 +17,16 @@ export class AuthService {
     ) {}
 
     async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string, userId: number, userRole: UserRole }> {
-        const email = await this.userRepository.validateUserPassword(authCredentialsDto);
+        const user = await this.userRepository.validateUserPassword(authCredentialsDto);
 
-        if (!email) {
+        if (!user.email) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const payload: JwtPayload = { email };
+        const payload: JwtPayload = { email: user.email };
         const accessToken = await this.jwtService.sign(payload);
 
         this.logger.debug('Generated JWT Token with payload: ' + JSON.stringify(payload));
-
-        const user = await this.userRepository.findOne({ email });
 
         return { accessToken, userId: user.id, userRole: user.role };
     }
