@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query, ValidationPipe, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, ValidationPipe, Param, ParseIntPipe, Delete, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
@@ -16,8 +16,9 @@ export class UsersController {
     @Get()
     getUsers(
         @Query(ValidationPipe) filterDto: GetUsersFilterDto,
+        @GetUser() user: User,
     ): Promise<User[]> {
-        return this.userService.getUsers(filterDto);
+        return this.userService.getUsers(filterDto, user);
     }
 
     @Get('/:id')
@@ -32,7 +33,14 @@ export class UsersController {
         @Body(ValidationPipe) createUserDto: CreateUserDto,
         @GetUser() user: User,
     ): Promise<User> {
-        console.log(user);
-        return this.userService.createUser(createUserDto);
+        return this.userService.createUser(createUserDto, user);
+    }
+
+    @Delete('/:id')
+    deleteUser(
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: User,
+    ): Promise<void> {
+        return this.userService.deleteUser(id);
     }
 }

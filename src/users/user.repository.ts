@@ -1,19 +1,22 @@
 import { User } from '../entities/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Logger, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { Logger, InternalServerErrorException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
 import { UserRole } from '../users/user-role.enum';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
+import { userInfo } from 'os';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('UserRepository');
 
-    async createUser(createUserDto: CreateUserDto): Promise<User> {
+    async createUser(createUserDto: CreateUserDto, userConnected: User): Promise<User> {
+        this.adminVerification(userConnected);
+
         const user = new User();
         const { email, password, role } = createUserDto;
 
@@ -61,14 +64,15 @@ export class UserRepository extends Repository<User> {
         return guest;
     }
 
-    async getUsers(filterDto: GetUsersFilterDto) {
-        const role = filterDto;
+    async getUsers(filterDto: GetUsersFilterDto, user: User) {
+        this.adminVerification(user);
+
+        const role = filterDto.role;
         const query = this.createQueryBuilder('user');
 
-        /*
         if (role) {
-            query.where('user.role LIKE :role', {role});
-        } */
+            query.where('user.role = :role', { role });
+        }
 
         query.leftJoinAndSelect('user.guestInfo', 'guestInfo');
 
@@ -94,6 +98,12 @@ export class UserRepository extends Repository<User> {
             return user.email;
         } else {
             return null;
+        }
+    }
+
+    private adminVerification(user: User) {
+        if (user.role !== UserRole.ADMIN) {
+            throw new UnauthorizedException('role ADMIN is required');
         }
     }
 }

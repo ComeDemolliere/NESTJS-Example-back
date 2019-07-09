@@ -12,8 +12,8 @@ export class UsersService {
         private userRepository: UserRepository,
     ) {}
 
-    async getUsers(filterDto: GetUsersFilterDto) {
-        return this.userRepository.getUsers(filterDto);
+    async getUsers(filterDto: GetUsersFilterDto, user: User) {
+        return this.userRepository.getUsers(filterDto, user);
     }
 
     async getUserById(id: number) {
@@ -24,7 +24,14 @@ export class UsersService {
         return found;
     }
 
-    async createUser(createUserDto: CreateUserDto): Promise<User> {
-        return this.userRepository.createUser(createUserDto);
+    async createUser(createUserDto: CreateUserDto, user: User): Promise<User> {
+        return this.userRepository.createUser(createUserDto, user);
+    }
+
+    async deleteUser(id: number): Promise<void> {
+        const result = await this.userRepository.delete({id});
+        if (result.affected === 0) {
+            throw new NotFoundException('User with this ID not found');
+        }
     }
 }
