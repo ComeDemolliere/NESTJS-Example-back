@@ -16,7 +16,12 @@ export class AuthService {
         private jwtService: JwtService,
     ) {}
 
-    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string, userId: number, userRole: UserRole }> {
+    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{
+        accessToken: string,
+        userId: number,
+        userRole: UserRole,
+        expireIn: number,
+    }> {
         const user = await this.userRepository.validateUserPassword(authCredentialsDto);
 
         if (!user || !user.email) {
@@ -28,6 +33,6 @@ export class AuthService {
 
         this.logger.debug('Generated JWT Token with payload: ' + JSON.stringify(payload));
 
-        return { accessToken, userId: user.id, userRole: user.role };
+        return { accessToken, userId: user.id, userRole: user.role, expireIn: 3600 };
     }
 }
