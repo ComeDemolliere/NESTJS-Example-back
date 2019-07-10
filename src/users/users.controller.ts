@@ -4,7 +4,7 @@ import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from '../auth/get-user.decorator';
+import { GetUser } from '../decorators/get-user.decorator';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
 
