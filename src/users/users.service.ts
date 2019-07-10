@@ -21,15 +21,17 @@ export class UsersService {
         if (user.role !== UserRole.ADMIN && user.id !== id) {
             throw new UnauthorizedException('unsuccessful right');
         }
+
+        if (user.id === id) {
+            return this.userWithRestrictiveInfo(user);
+        }
+
         const found = await this.userRepository.findOne({ where: {id}, relations: ['guestInfo']});
         if (!found) {
             throw new NotFoundException('User with this ID not found');
         }
 
-        delete user.password;
-        delete user.salt;
-
-        return found;
+        return this.userWithRestrictiveInfo(found);
     }
 
     async createUser(createUserDto: CreateUserDto, user: User): Promise<User> {
@@ -44,5 +46,12 @@ export class UsersService {
         if (result.affected === 0) {
             throw new NotFoundException('User with this ID not found');
         }
+    }
+
+    private userWithRestrictiveInfo(user: User) {
+        delete user.password;
+        delete user.salt;
+
+        return user;
     }
 }

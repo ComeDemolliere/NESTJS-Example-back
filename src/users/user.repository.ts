@@ -77,6 +77,7 @@ export class UserRepository extends Repository<User> {
             query.where('user.role = :role', { role });
         }
 
+        query.andWhere('user.id != :id', { id: user.id });
         query.leftJoinAndSelect('user.guestInfo', 'guestInfo');
 
         try {
