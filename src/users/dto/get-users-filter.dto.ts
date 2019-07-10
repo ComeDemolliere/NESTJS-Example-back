@@ -1,4 +1,4 @@
-import { IsOptional, IsIn, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsIn } from 'class-validator';
 import { UserRole } from '../user-role.enum';
 
 export class GetUsersFilterDto {

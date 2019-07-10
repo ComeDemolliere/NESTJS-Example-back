@@ -1,11 +1,10 @@
-import { Controller, Post, Body, Get, Query, ValidationPipe, Param, ParseIntPipe, Delete, UseGuards, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, ValidationPipe, Param, ParseIntPipe, Delete, UseGuards, Put, Patch } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
-import { UpdateDateColumn } from 'typeorm';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
 
@@ -46,6 +45,15 @@ export class UsersController {
         @GetUser() user: User,
     ): Promise<void> {
         return this.userService.deleteUser(id, user);
+    }
+
+    @Patch('/:id/email')
+    updateUserEmail(
+        @Body(ValidationPipe) body: { email: string },
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: User,
+    ): Promise<User> {
+        return this.userService.updateEmail(id, user, body.email);
     }
 
     @Put('/:id/guestInfo')

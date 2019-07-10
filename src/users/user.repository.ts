@@ -32,18 +32,11 @@ export class UserRepository extends Repository<User> {
         try {
             await user.save();
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictException('email already exists');
-            } else {
-                this.logger.error('Failed to create user: ' + user.email + '.DTO: ' + JSON.stringify(createUserDto), error.stack);
-                throw new InternalServerErrorException();
-            }
+            this.catchUserError(user, error, createUserDto);
+            return;
         }
 
-        delete user.password;
-        delete user.salt;
-
-        return user;
+        return this.userWithRestrictiveInfo(user);
     }
 
     private async createGuest(createGuestDto: CreateGuestDto) {
@@ -104,6 +97,19 @@ export class UserRepository extends Repository<User> {
         }
     }
 
+    async updateEmail(user: User, email: string): Promise<User> {
+        user.email = email;
+
+        try {
+            await user.save();
+        } catch (error) {
+            this.catchUserError(user, error, email);
+            return;
+        }
+
+        return user;
+    }
+
     async updateGuest(guestInfoDto: CreateGuestDto, guest: Guest): Promise<Guest> {
         guest.firstName = guestInfoDto.firstName;
         guest.lastName = guestInfoDto.lastName;
@@ -125,5 +131,21 @@ export class UserRepository extends Repository<User> {
             throw new UnauthorizedException('role ADMIN is required');
         }
         return true;
+    }
+
+    userWithRestrictiveInfo(user: User): User {
+        delete user.password;
+        delete user.salt;
+
+        return user;
+    }
+
+    private catchUserError(user: User, error: any, dto: any) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw new ConflictException('email already exists');
+        } else {
+            this.logger.error('Failed to create/update user: ' + user.email + '.DTO: ' + JSON.stringify(dto), error.stack);
+            throw new InternalServerErrorException();
+        }
     }
 }

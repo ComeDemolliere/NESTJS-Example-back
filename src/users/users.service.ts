@@ -25,7 +25,7 @@ export class UsersService {
         }
 
         if (user.id === id) {
-            return this.userWithRestrictiveInfo(user);
+            return this.userRepository.userWithRestrictiveInfo(user);
         }
 
         const found = await this.userRepository.findOne({ where: {id}, relations: ['guestInfo']});
@@ -33,7 +33,7 @@ export class UsersService {
             throw new NotFoundException('User with this ID not found');
         }
 
-        return this.userWithRestrictiveInfo(found);
+        return this.userRepository.userWithRestrictiveInfo(found);
     }
 
     async createUser(createUserDto: CreateUserDto, user: User): Promise<User> {
@@ -50,6 +50,12 @@ export class UsersService {
         }
     }
 
+    async updateEmail(id: number, user: User, email: string): Promise<User> {
+        const userFound: User = await this.getUserById(id, user);
+
+        return this.userRepository.updateEmail(userFound, email);
+    }
+
     async updateGuestInfo(id: number, guestInfoDto: CreateGuestDto, user: User): Promise<Guest> {
         const userFound: User = await this.getUserById(id, user);
 
@@ -58,12 +64,5 @@ export class UsersService {
         }
 
         return this.userRepository.updateGuest(guestInfoDto, userFound.guestInfo);
-    }
-
-    private userWithRestrictiveInfo(user: User): User {
-        delete user.password;
-        delete user.salt;
-
-        return user;
     }
 }

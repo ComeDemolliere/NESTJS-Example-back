@@ -1,7 +1,6 @@
 import { UserRole } from '../user-role.enum';
 import { CreateGuestDto } from './create-guest.dto';
 import { IsString, IsEmail, MinLength, IsNotEmpty, IsIn } from 'class-validator';
-import { ValidationPipe } from '@nestjs/common';
 
 export class CreateUserDto {
     @IsString()
