@@ -7,6 +7,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../decorators/get-user.decorator';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Guest } from '../entities/guest.entity';
+import { CreatePasswordDto } from './dto/create-password.dto';
+import { CreateEmailDto } from './dto/create-email.dto';
 
 @Controller('users')
 @UseGuards(AuthGuard())
@@ -49,20 +51,20 @@ export class UsersController {
 
     @Patch('/:id/email')
     updateUserEmail(
-        @Body(ValidationPipe) body: { email: string },
+        @Body(ValidationPipe) emailDto: CreateEmailDto,
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: User,
     ): Promise<User> {
-        return this.userService.updateEmail(id, user, body.email);
+        return this.userService.updateEmail(id, user, emailDto.email);
     }
 
     @Patch('/:id/password')
     updateUserPassword(
-        @Body(ValidationPipe) body: { password: string },
+        @Body(ValidationPipe) passwordDto: CreatePasswordDto,
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: User,
     ): Promise<User> {
-        return this.userService.updatePassword(id, user, body.password);
+        return this.userService.updatePassword(id, user, passwordDto.password);
     }
 
     @Put('/:id/guestInfo')
