@@ -19,7 +19,7 @@ export class AuthService {
     async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string, userId: number, userRole: UserRole }> {
         const user = await this.userRepository.validateUserPassword(authCredentialsDto);
 
-        if (!user.email) {
+        if (!user || !user.email) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
