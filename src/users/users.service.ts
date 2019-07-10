@@ -24,10 +24,6 @@ export class UsersService {
             throw new UnauthorizedException('unsuccessful right');
         }
 
-        if (user.id === id) {
-            return this.userRepository.userWithRestrictiveInfo(user);
-        }
-
         const found = await this.userRepository.findOne({ where: {id}, relations: ['guestInfo']});
         if (!found) {
             throw new NotFoundException('User with this ID not found');
