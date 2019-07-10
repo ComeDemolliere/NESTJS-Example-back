@@ -110,6 +110,20 @@ export class UserRepository extends Repository<User> {
         return user;
     }
 
+    async updatePassword(user: User, password: string): Promise<User> {
+        user.salt = await bcrypt.genSalt();
+        user.password = await this.hashPassword(password, user.salt);
+
+        try {
+            await user.save();
+        } catch (error) {
+            this.logger.error('Failed to update password: ' + user.email + '.DTO: ' + JSON.stringify(password), error.stack);
+            throw new InternalServerErrorException();
+        }
+
+        return user;
+    }
+
     async updateGuest(guestInfoDto: CreateGuestDto, guest: Guest): Promise<Guest> {
         guest.firstName = guestInfoDto.firstName;
         guest.lastName = guestInfoDto.lastName;

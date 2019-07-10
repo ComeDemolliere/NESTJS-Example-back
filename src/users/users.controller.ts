@@ -56,6 +56,15 @@ export class UsersController {
         return this.userService.updateEmail(id, user, body.email);
     }
 
+    @Patch('/:id/password')
+    updateUserPassword(
+        @Body(ValidationPipe) body: { password: string },
+        @Param('id', ParseIntPipe) id: number,
+        @GetUser() user: User,
+    ): Promise<User> {
+        return this.userService.updatePassword(id, user, body.password);
+    }
+
     @Put('/:id/guestInfo')
     updateGuestInfo(
         @Body(ValidationPipe) guestInfoDto: CreateGuestDto,

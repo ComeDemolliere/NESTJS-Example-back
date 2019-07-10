@@ -51,9 +51,19 @@ export class UsersService {
     }
 
     async updateEmail(id: number, user: User, email: string): Promise<User> {
+        if (!this.userRepository.adminVerification(user)) {
+            return;
+        }
+
         const userFound: User = await this.getUserById(id, user);
 
         return this.userRepository.updateEmail(userFound, email);
+    }
+
+    async updatePassword(id: number, user: User, password: string): Promise<User> {
+        const userFound: User = await this.getUserById(id, user);
+
+        return this.userRepository.updatePassword(userFound, password);
     }
 
     async updateGuestInfo(id: number, guestInfoDto: CreateGuestDto, user: User): Promise<Guest> {
