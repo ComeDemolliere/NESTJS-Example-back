@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UserRole } from './user-role.enum';
+import { CreateGuestDto } from './dto/create-guest.dto';
+import { Guest } from '../entities/guest.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +19,7 @@ export class UsersService {
         return this.userRepository.getUsers(filterDto, user);
     }
 
-    async getUserById(id: number, user: User) {
+    async getUserById(id: number, user: User): Promise<User> {
         if (user.role !== UserRole.ADMIN && user.id !== id) {
             throw new UnauthorizedException('unsuccessful right');
         }
@@ -48,7 +50,17 @@ export class UsersService {
         }
     }
 
-    private userWithRestrictiveInfo(user: User) {
+    async updateGuestInfo(id: number, guestInfoDto: CreateGuestDto, user: User): Promise<Guest> {
+        const userFound: User = await this.getUserById(id, user);
+
+        if (userFound.role !== UserRole.GUEST) {
+            throw new UnauthorizedException('this user is not of type GUEST');
+        }
+
+        return this.userRepository.updateGuest(guestInfoDto, userFound.guestInfo);
+    }
+
+    private userWithRestrictiveInfo(user: User): User {
         delete user.password;
         delete user.salt;
 

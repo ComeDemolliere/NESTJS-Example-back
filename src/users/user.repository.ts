@@ -8,7 +8,6 @@ import { UserRole } from '../users/user-role.enum';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
-import { userInfo } from 'os';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -103,6 +102,22 @@ export class UserRepository extends Repository<User> {
         } else {
             return null;
         }
+    }
+
+    async updateGuest(guestInfoDto: CreateGuestDto, guest: Guest): Promise<Guest> {
+        guest.firstName = guestInfoDto.firstName;
+        guest.lastName = guestInfoDto.lastName;
+        guest.company = guestInfoDto.company;
+        guest.logo = guestInfoDto.logo;
+
+        try {
+            await guest.save();
+        } catch (error) {
+            this.logger.error('Failed to update guest: ' + guest.firstName + '.DTO: ' + JSON.stringify(guestInfoDto), error.stack);
+            throw new InternalServerErrorException();
+        }
+
+        return guest;
     }
 
     adminVerification(user: User): boolean {
